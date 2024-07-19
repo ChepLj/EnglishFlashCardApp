@@ -1,0 +1,82 @@
+
+
+
+
+
+.flashcard {
+  /* -webkit-app-region: drag; */
+    /* position: fixed; */
+    /* top: 0; */
+    /* left: 50%; */
+    /* transform: translateX(-50%); */
+    background-color: white;
+    padding: 5px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: fit-content;
+    margin: 0;
+    white-space: nowrap; 
+    user-select: none; /* standard syntax */
+    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+    -moz-user-select: none; /* mozilla browsers */
+    -khtml-user-select: none; /* webkit (konqueror) browsers */
+    -ms-user-select: none; /* IE10+ */
+  }
+  
+  .flashcard.show {
+    opacity: 1;
+    white-space: nowrap; 
+  }
+  
+
+  .text{
+    padding: 0 5px;
+    color: red;
+    white-space: nowrap; 
+    user-select: none;
+  }
+
+  .ipa{
+    padding: 0 5px;
+    white-space: nowrap; 
+    user-select: none;
+  }
+
+
+  .translate{
+    padding: 0 5px;
+    font-style: italic;
+    color:gray;
+    user-select: none;
+  }
+
+  .install-icon{
+    padding: 0 5px;
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+  }
+
+  .dragGroup{
+      -webkit-app-region: drag;
+      display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: fit-content;
+    margin: 0;
+    white-space: nowrap; 
+  }
+
+  .main {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    width: fit-content;
+    margin: 0;
+  }

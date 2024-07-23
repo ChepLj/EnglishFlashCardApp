@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import "./Setting.css";
 
 const Setting = ({ onClose, showSettings, handleSelectFile, filePath, errorMessage, sheets, handelSentFlashCardSize }) => {
-  console.log("🚀 ~ Setting ~ filePath:", filePath);
   const [showEnglish, setShowEnglish] = useState(true);
   const [showIpa, setShowIpa] = useState(true);
   const [showVietnamese, setShowVietnamese] = useState(true);
@@ -34,7 +33,7 @@ const Setting = ({ onClose, showSettings, handleSelectFile, filePath, errorMessa
         setChildVoiceRepeat(data.childVoiceRepeat || 1);
         setDisplayTime(data.displayTime || 5);
         setDelayTime(data.delayTime || 3);
-        // setDbPath(data.dbPath || "");
+
         setRandomMode(data.randomMode || false);
         setSelectedSheets(data.selectedSheets || []);
       }
@@ -110,7 +109,9 @@ const Setting = ({ onClose, showSettings, handleSelectFile, filePath, errorMessa
   };
   useEffect(() => {
     handelSentFlashCardSize();
+    setSelectedSheets([])
   }, [filePath]);
+  console.log(sheets)
   return (
     <div className="setting">
       <div className="left-section">

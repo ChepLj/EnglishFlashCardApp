@@ -5,7 +5,6 @@ import speakerIcon from "./resources/icon-speaker.png";
 import muteIcon from "./resources/icon-mute.png";
 import Setting from "./Setting.js";
 
-
 const FlashCard = () => {
   const [index, setIndex] = useState(0);
   const [show, setShow] = useState(true);
@@ -21,34 +20,28 @@ const FlashCard = () => {
   const timeoutReZeroSizeIdRef = useRef(null);
   const intervalIdRef = useRef(null);
   const [isMuted, setIsMuted] = useState(false); // State to keep track of mute state
-  const [filePath, setFilePath] = useState("");
+  const [filePathCheckOk, setFilePathCheckOk] = useState("");
+  const [dbPathSetting, setDbPathSetting] = useState("");
+  const [dataMain, setDataMain] = useState({});
   const [words, setWords] = useState([{ English: "English", Ipa: "Ipa", Vietnamese: "Vietnamese" }]);
   const [errorMessage, setErrorMessage] = useState("");
   const [randomMode, setRandomMode] = useState(false);
   const [selectedSheets, setSelectedSheets] = useState([]);
 
-
-
-  const makeData = (data,sheetSelected, isRandom) => {
-    const array = sheetSelected?.map((item) => data[item]);
-    console.log("🚀 ~ makeData ~ array:", array)
-    if (isRandom) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      console.log("🚀 ~ makeData ~ array:", array)
-      return array;
-    }
-      
-    return array;
-  
-  }
+  const makeData = (data, sheetSelected) => {
+    console.log("🚀 ~ makeData ~ sheetSelected:", sheetSelected)
+    const array = sheetSelected?.map((item) => {
+      return data[item];
+    });
+console.log(array.flat())
+    return array.flat();
+  };
   useEffect(() => {
     window.ipc.send("load-settings");
   }, []);
   useEffect(() => {
     window.ipc.receive("load-settings-reply", (data) => {
+      console.log("🚀 ~ window.ipc.receive ~ data:", data)
       if (data) {
         setShowEnglish(data.showEnglish || false);
         setShowIpa(data.showIpa || false);
@@ -63,28 +56,40 @@ const FlashCard = () => {
         setDelayTime(data.delayTime || 3);
         setRandomMode(data.randomMode || false);
         setSelectedSheets(data.selectedSheets || []);
-        // // setDbPath(data.dbPath || "");
-        if (data.filePath) {
-          window.ipc.send("load-excel-file-startup", data.filePath);
-        } else {
-          setErrorMessage("Select Excel file");
-          setShowSettings(true);
-        }
+        setDbPathSetting(data.filePath || "");
+       
       }
     });
     window.ipc.receive("load-excel-file-startup-reply", (result) => {
+      console.log(selectedSheets)
       if (result.success) {
-        setWords(result.data["t Sounds"]);
-        console.log(makeData(result.data, selectedSheets, randomMode))
+        setDataMain(result.data);
+        setWords(makeData(result.data, selectedSheets));
         setErrorMessage("");
-        setFilePath(result.filePath);
+        setFilePathCheckOk(result.filePath);
       } else {
         setErrorMessage(result.message);
-        setFilePath("");
+        setFilePathCheckOk("");
         setShowSettings(true);
       }
+        
     });
   }, []);
+  useEffect(() => {
+    if (dataMain) {
+      console.log(selectedSheets)
+      setWords(makeData(dataMain, selectedSheets));
+  }}, [selectedSheets]);
+
+  useEffect(() => {
+    if (dbPathSetting) {
+      console.log( dbPathSetting)
+      window.ipc.send("load-excel-file-startup", dbPathSetting);
+    } else {
+      setErrorMessage("Select Excel file");
+      setShowSettings(true);
+    }
+  }, [dbPathSetting]);
 
   useEffect(() => {
     if (!showSettings) {
@@ -100,10 +105,17 @@ const FlashCard = () => {
 
   const startCardRotation = () => {
     const changeCard = () => {
-      setIndex((prevIndex) => {
-        if (prevIndex < words.length - 1) return prevIndex + 1;
-        else return 0;
-      });
+      if (randomMode) {
+        console.log(words);
+        const index = Math.floor(Math.random() * words.length);
+        console.log("🚀 ~ changeCard ~ index:", index);
+        setIndex(index);
+      } else {
+        setIndex((prevIndex) => {
+          if (prevIndex < words.length - 1) return prevIndex + 1;
+          else return 0;
+        });
+      }
       setShow(true);
       const timeoutId = setTimeout(() => {
         !showSettings && setShow(false);
@@ -148,10 +160,10 @@ const FlashCard = () => {
     } else {
       const timeoutId = setTimeout(() => {
         if (!showSettings) {
-          // window.ipc.send("flashcard-size", {
-          //   width: 0,
-          //   height: 0,
-          // });
+          window.ipc.send("flashcard-size", {
+            width: 0,
+            height: 0,
+          });
         }
       }, 1500);
       timeoutReZeroSizeIdRef.current = timeoutId;
@@ -181,17 +193,18 @@ const FlashCard = () => {
   const handleSelectFile = async () => {
     const result = await window.electron.selectExcelFile();
     if (result.success) {
-      setWords(result.data);
+      setDataMain(result.data);
       console.log("🚀 ~ handleSelectFile ~ result.data:", result.data);
       setErrorMessage("");
-      setFilePath(result.filePath);
+      setFilePathCheckOk(result.filePath);
     } else {
       setErrorMessage(result.message);
-      setFilePath("");
+      setFilePathCheckOk("");
     }
   };
+  console.log(dataMain);
   console.log(words);
-  console.log(index)
+  console.log(index);
 
   return (
     <section className="main" ref={flashCardRef}>
@@ -210,9 +223,9 @@ const FlashCard = () => {
           onClose={handleCloseSettings}
           showSettings={showSettings}
           handleSelectFile={handleSelectFile}
-          filePath={filePath}
+          filePath={filePathCheckOk}
           errorMessage={errorMessage}
-          sheets={words}
+          sheets={dataMain}
           handelSentFlashCardSize={handelSentFlashCardSize}
         />
       )}
